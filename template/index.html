@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ProspectIQ — Company Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #11111c;
+  --surface2: #181828;
+  --border: rgba(120,120,255,0.12);
+  --accent: #7c6ff7;
+  --accent2: #38d9a9;
+  --accent3: #f7c16f;
+  --text: #e8e8f0;
+  --muted: #6b6b8a;
+  --danger: #f76f6f;
+  --radius: 12px;
+  --radius-lg: 20px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Ambient background */
+body::before {
+  content: '';
+  position: fixed;
+  top: -30%;
+  left: -20%;
+  width: 70%;
+  height: 70%;
+  background: radial-gradient(ellipse, rgba(124,111,247,0.08) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -20%;
+  right: -10%;
+  width: 50%;
+  height: 60%;
+  background: radial-gradient(ellipse, rgba(56,217,169,0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Layout ── */
+.wrapper { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 24px 80px; }
+
+/* ── Header ── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32px 0 48px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 52px;
+}
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+.logo span { color: var(--accent); }
+.badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--accent2);
+  background: rgba(56,217,169,0.1);
+  border: 1px solid rgba(56,217,169,0.2);
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.08em;
+}
+
+/* ── Section titles ── */
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── Card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  margin-bottom: 32px;
+  transition: border-color .2s;
+}
+.card:hover { border-color: rgba(124,111,247,0.25); }
+
+/* ── Enrich form ── */
+.enrich-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+@media(max-width:640px){ .enrich-grid{ grid-template-columns:1fr; } }
+
+label {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+input[type="text"], input[type="url"] {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 13px 16px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(124,111,247,0.15);
+}
+input::placeholder { color: var(--muted); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 24px;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  transition: all .2s;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { background: #6b5ef0; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124,111,247,0.35); }
+.btn-primary:active { transform: none; }
+.btn-secondary {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+/* ── Loading state ── */
+.loader {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--accent);
+}
+.loader.active { display: flex; }
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(124,111,247,0.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.status-steps { display: flex; flex-direction: column; gap: 2px; }
+.step { opacity: 0; transform: translateY(4px); transition: all .3s; font-size: 0.75rem; }
+.step.visible { opacity: 1; transform: none; }
+.step.done { color: var(--accent2); }
+.step.active { color: var(--accent); }
+
+/* ── Result card ── */
+.result-box {
+  display: none;
+  background: var(--surface2);
+  border: 1px solid rgba(56,217,169,0.2);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  margin-top: 24px;
+  animation: fadeSlide .4s ease;
+}
+.result-box.visible { display: block; }
+@keyframes fadeSlide { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+
+.result-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+.result-company-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+}
+.result-url {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.result-tag {
+  background: rgba(56,217,169,0.1);
+  border: 1px solid rgba(56,217,169,0.25);
+  color: var(--accent2);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+  letter-spacing: 0.06em;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+@media(max-width:640px){ .result-grid{ grid-template-columns:1fr; } }
+
+.field-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.field-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.field-value {
+  font-size: 0.9rem;
+  color: var(--text);
+  line-height: 1.5;
+  word-break: break-word;
+}
+.field-value.empty { color: var(--muted); font-style: italic; }
+.mail-chip {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(124,111,247,0.12);
+  border: 1px solid rgba(124,111,247,0.2);
+  color: var(--accent);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin: 2px 4px 2px 0;
+}
+
+.outreach-box {
+  background: linear-gradient(135deg, rgba(247,193,111,0.08) 0%, rgba(124,111,247,0.08) 100%);
+  border: 1px solid rgba(247,193,111,0.2);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+}
+.outreach-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--accent3);
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.outreach-text {
+  font-size: 0.9rem;
+  color: var(--text);
+  line-height: 1.65;
+  font-style: italic;
+}
+
+/* ── Error ── */
+.error-box {
+  display: none;
+  background: rgba(247,111,111,0.08);
+  border: 1px solid rgba(247,111,111,0.25);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-top: 16px;
+  color: var(--danger);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.8rem;
+}
+.error-box.visible { display: block; }
+
+/* ── Results table ── */
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+thead {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+th {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 14px 16px;
+  text-align: left;
+  white-space: nowrap;
+}
+td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  color: var(--text);
+  max-width: 240px;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(124,111,247,0.04); }
+.td-name { font-weight: 600; font-family: 'Syne', sans-serif; }
+.td-service { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+.td-mail { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--accent); }
+.td-empty { color: var(--muted); font-style: italic; font-size: 0.8rem; }
+.td-pain { font-size: 0.82rem; color: var(--accent3); line-height: 1.4; }
+
+.empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--muted);
+}
+.empty-state-icon { font-size: 3rem; margin-bottom: 12px; }
+.empty-state-text { font-family: 'DM Mono', monospace; font-size: 0.85rem; }
+
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.count-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--accent);
+  background: rgba(124,111,247,0.1);
+  border: 1px solid rgba(124,111,247,0.2);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">Prospect<span>IQ</span></div>
+    <div class="badge">AI RESEARCH AGENT</div>
+  </header>
+
+  <!-- Enrich Section -->
+  <section style="margin-bottom:60px">
+    <div class="section-title">🔍 Enrich Company</div>
+    <div class="card">
+      <div class="enrich-grid">
+        <div>
+          <label>WEBSITE NAME (optional)</label>
+          <input type="text" id="inp-name" placeholder="e.g. Acme Corp" autocomplete="off"/>
+        </div>
+        <div>
+          <label>COMPANY URL *</label>
+          <input type="url" id="inp-url" placeholder="https://company.com" autocomplete="off"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+        <button class="btn btn-primary" id="btn-enrich" onclick="doEnrich()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Enrich Company
+        </button>
+        <button class="btn btn-secondary" onclick="document.getElementById('inp-url').value=''; document.getElementById('inp-name').value=''; hideResult()">
+          Clear
+        </button>
+      </div>
+
+      <!-- Loader -->
+      <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <div class="status-steps" id="status-steps">
+          <div class="step" id="step-1">Fetching sitemap &amp; crawling pages...</div>
+          <div class="step" id="step-2">Selecting relevant pages (fuzzy match)...</div>
+          <div class="step" id="step-3">Cleaning HTML &amp; extracting contacts...</div>
+          <div class="step" id="step-4">Sending to Claude AI for enrichment...</div>
+          <div class="step" id="step-5">Parsing &amp; validating output...</div>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div class="error-box" id="error-box"></div>
+
+      <!-- Result -->
+      <div class="result-box" id="result-box"></div>
+    </div>
+  </section>
+
+  <!-- Results Section -->
+  <section>
+    <div class="results-header">
+      <div class="section-title" style="margin-bottom:0;flex:1">📊 All Results</div>
+      <button class="btn btn-secondary" onclick="loadResults()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.95"/></svg>
+        Refresh Results
+      </button>
+      <span class="count-badge" id="count-badge" style="display:none"></span>
+    </div>
+    <div id="results-container">
+      <div class="empty-state">
+        <div class="empty-state-icon">🗂️</div>
+        <div class="empty-state-text">Click "Refresh Results" to load enriched companies</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const API = window.location.origin; // same origin; change to backend URL if needed
+
+// ── Enrich ──────────────────────────────────────────────────────────────────
+let stepTimer = null;
+
+function showLoader() {
+  document.getElementById('loader').classList.add('active');
+  const steps = [1,2,3,4,5];
+  let i = 0;
+  function tick() {
+    if (i > 0) {
+      document.getElementById('step-'+steps[i-1]).classList.remove('active');
+      document.getElementById('step-'+steps[i-1]).classList.add('done');
+    }
+    if (i < steps.length) {
+      document.getElementById('step-'+steps[i]).classList.add('visible','active');
+      i++;
+      stepTimer = setTimeout(tick, 3000 + Math.random()*2000);
+    }
+  }
+  steps.forEach(s => {
+    const el = document.getElementById('step-'+s);
+    el.classList.remove('visible','active','done');
+  });
+  tick();
+}
+
+function hideLoader() {
+  clearTimeout(stepTimer);
+  document.getElementById('loader').classList.remove('active');
+  [1,2,3,4,5].forEach(s => {
+    const el = document.getElementById('step-'+s);
+    el.classList.remove('visible','active','done');
+  });
+}
+
+function hideResult() {
+  document.getElementById('result-box').classList.remove('visible');
+  document.getElementById('result-box').innerHTML = '';
+  document.getElementById('error-box').classList.remove('visible');
+}
+
+function val(v) {
+  if (!v || (Array.isArray(v) && !v.length)) return null;
+  return v;
+}
+
+function renderResult(d) {
+  const emails = Array.isArray(d.mail) ? d.mail : (d.mail ? [d.mail] : []);
+  const mailHtml = emails.length
+    ? emails.map(e => `<span class="mail-chip">${e}</span>`).join('')
+    : '<span class="td-empty">not found</span>';
+
+  return `
+    <div class="result-header">
+      <div>
+        <div class="result-company-name">${d.company_name || d.website_name || 'Unknown Company'}</div>
+        <div class="result-url">${d.website_name || ''}</div>
+      </div>
+      <span class="result-tag">✓ ENRICHED</span>
+    </div>
+
+    <div class="result-grid">
+      <div class="field-block">
+        <div class="field-label">📍 Address</div>
+        <div class="field-value ${!val(d.address)?'empty':''}">${d.address || 'Not found on website'}</div>
+      </div>
+      <div class="field-block">
+        <div class="field-label">📞 Phone</div>
+        <div class="field-value ${!val(d.mobile_number)?'empty':''}">${d.mobile_number || 'Not found on website'}</div>
+      </div>
+      <div class="field-block" style="grid-column:1/-1">
+        <div class="field-label">📧 Email(s)</div>
+        <div class="field-value">${mailHtml}</div>
+      </div>
+      <div class="field-block">
+        <div class="field-label">⚙️ Core Service</div>
+        <div class="field-value ${!val(d.core_service)?'empty':''}">${d.core_service || '—'}</div>
+      </div>
+      <div class="field-block">
+        <div class="field-label">🎯 Target Customer</div>
+        <div class="field-value ${!val(d.target_customer)?'empty':''}">${d.target_customer || '—'}</div>
+      </div>
+      <div class="field-block" style="grid-column:1/-1">
+        <div class="field-label">⚠️ Probable Pain Point</div>
+        <div class="field-value ${!val(d.probable_pain_point)?'empty':''}">${d.probable_pain_point || '—'}</div>
+      </div>
+    </div>
+
+    <div class="outreach-box">
+      <div class="outreach-label">✉️ Outreach Opener</div>
+      <div class="outreach-text">${d.outreach_opener || '—'}</div>
+    </div>
+  `;
+}
+
+async function doEnrich() {
+  const url  = document.getElementById('inp-url').value.trim();
+  const name = document.getElementById('inp-name').value.trim();
+  if (!url) { alert('Please enter a company URL'); return; }
+
+  hideResult();
+  document.getElementById('btn-enrich').disabled = true;
+  showLoader();
+
+  try {
+    const resp = await fetch(`${API}/enrich`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, website_name: name })
+    });
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      throw new Error(data.error || `Server error ${resp.status}`);
+    }
+
+    hideLoader();
+    const box = document.getElementById('result-box');
+    box.innerHTML = renderResult(data);
+    box.classList.add('visible');
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  } catch (err) {
+    hideLoader();
+    const eb = document.getElementById('error-box');
+    eb.textContent = `❌ ${err.message}`;
+    eb.classList.add('visible');
+  } finally {
+    document.getElementById('btn-enrich').disabled = false;
+  }
+}
+
+// ── Results table ────────────────────────────────────────────────────────────
+async function loadResults() {
+  const container = document.getElementById('results-container');
+  container.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto 12px;width:24px;height:24px;border-width:3px"></div><div class="empty-state-text">Loading...</div></div>';
+
+  try {
+    const resp = await fetch(`${API}/results`);
+    const data = await resp.json();
+
+    const badge = document.getElementById('count-badge');
+    if (data.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">📭</div>
+          <div class="empty-state-text">No companies enriched yet. Use the form above!</div>
+        </div>`;
+      badge.style.display = 'none';
+      return;
+    }
+
+    badge.textContent = `${data.length} record${data.length>1?'s':''}`;
+    badge.style.display = 'inline-flex';
+
+    const rows = data.map((d, i) => {
+      const emails = Array.isArray(d.mail) ? d.mail : (d.mail ? [d.mail] : []);
+      const mailStr = emails.length ? emails[0] + (emails.length > 1 ? ` +${emails.length-1}` : '') : '';
+      return `
+        <tr>
+          <td style="width:30px;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.72rem">${i+1}</td>
+          <td>
+            <div class="td-name">${d.company_name || d.website_name || '—'}</div>
+            <div class="td-service" style="margin-top:4px">${d.website_name || ''}</div>
+          </td>
+          <td><div class="td-service">${d.core_service || '<span class="td-empty">—</span>'}</div></td>
+          <td><div class="td-service">${d.target_customer || '<span class="td-empty">—</span>'}</div></td>
+          <td><div class="td-mail">${mailStr || '<span class="td-empty">—</span>'}</div></td>
+          <td><div class="td-service">${d.mobile_number || '<span class="td-empty">—</span>'}</div></td>
+          <td><div class="td-pain">${d.probable_pain_point || '<span class="td-empty">—</span>'}</div></td>
+        </tr>`;
+    }).join('');
+
+    container.innerHTML = `
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Company</th>
+              <th>Core Service</th>
+              <th>Target Customer</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Pain Point</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+
+  } catch (err) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">⚠️</div>
+        <div class="empty-state-text">Failed to load results: ${err.message}</div>
+      </div>`;
+  }
+}
+
+// Enter key triggers enrich
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (document.activeElement.id === 'inp-url' || document.activeElement.id === 'inp-name')) {
+    doEnrich();
+  }
+});
+
+// Auto-load on page open
+loadResults();
+</script>
+</body>
+</html>
