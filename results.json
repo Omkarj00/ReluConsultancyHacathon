@@ -1,0 +1,25 @@
+[
+  {
+    "website_name": "zoho",
+    "company_name": "Zoho",
+    "address": "Estancia IT Park, Plot no. 140, 151, GST Road, Vallancheri, Chengalpattu District - 603 202, India",
+    "mobile_number": "+1 (833) 957-3953",
+    "mail": [
+      "press@zohocorp.com",
+      "slo@zohocorp.com",
+      "nanya@zohocorp.com",
+      "julie.watson@eu.zohocorp.com",
+      "alejandro.g@zohocorp.com",
+      "jessica.loo@zohocorp.com",
+      "tetsuhiro.iwami@zohocorp.com",
+      "mengxue.li@zohocorp.com",
+      "peterbalaji@zohocorp.com",
+      "abuse@zohocorp.com"
+    ],
+    "core_service": "Cloud Software Suite for Businesses",
+    "target_customer": "startups, mid-sized companies, and enterprises",
+    "probable_pain_point": "Fragmented business operations or managing multiple software vendors for operational needs.",
+    "outreach_opener": "Not sure which Zoho product is the right fit for your company? We can help determine what solutions will best suit your business.",
+    "_source_url": "https://www.zoho.com/"
+  }
+]
