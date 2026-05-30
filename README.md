@@ -1,4 +1,4 @@
-# ProspectIQ — Prospect Research Agent
+# Relu Consultancy Hackathon 
 > AI-powered B2B company enrichment: scrape → clean → enrich → display
 
 ---
